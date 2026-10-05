@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 
 class Provider(MetadataProvider):
     query_hint = 'Game name, SteamGridDB ID/URL, Steam URL, or steam:APP_ID'
-    image_types = frozenset(('Icon', 'CoverImage', 'HeaderImage', 'BackgroundImage'))
+    image_types = frozenset(('Icon', 'CoverImage', 'HeaderImage', 'BackgroundImage', 'Logo'))
 
     def __init__(self):
         self.client = Client(**load_settings())
@@ -25,7 +25,7 @@ class Provider(MetadataProvider):
         form.addRow('Images per category per batch', widget.image_limit)
         help_text = QLabel('<a href="https://www.steamgriddb.com/profile/preferences/api">Get a SteamGridDB API key</a>. '
                            'Provides basic game names and links, plus covers, heroes, icons, and logos. '
-                           'Hero images are available as headers and backgrounds; logos appear under icons. '
+                           'Hero images are available as headers and backgrounds; logos have their own downloader tab. '
                            'Static artwork only. The image limit keeps searches manageable.')
         help_text.setWordWrap(True)
         help_text.setOpenExternalLinks(True)
@@ -74,7 +74,7 @@ class Provider(MetadataProvider):
         return self.image_page(game_id, image_type)[0]
 
     def image_page(self, game_id, image_type, page=0):
-        categories = {'Icon': ('icons', 'logos'), 'CoverImage': ('grids',),
+        categories = {'Icon': ('icons',), 'Logo': ('logos',), 'CoverImage': ('grids',),
                       'HeaderImage': ('heroes',), 'BackgroundImage': ('heroes',)}
         candidates, more = [], False
         for category in categories.get(image_type, ()):

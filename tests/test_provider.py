@@ -108,7 +108,8 @@ class ProviderTests(unittest.TestCase):
         provider = module.Provider()
         with patch.object(provider.client, 'request', side_effect=[client_module.NotFound('No icons'),
                 {'data': [{'id': 1, 'url': 'https://cdn.example.com/logo.png'}]}]):
-            self.assertEqual(provider.images(12, 'Icon')[0]['url'], 'https://cdn.example.com/logo.png')
+            self.assertEqual(provider.images(12, 'Icon'), [])
+            self.assertEqual(provider.images(12, 'Logo')[0]['url'], 'https://cdn.example.com/logo.png')
 
     def test_metadata_only_returns_requested_supported_fields(self):
         provider = module.Provider()
@@ -118,7 +119,8 @@ class ProviderTests(unittest.TestCase):
     def test_image_mapping_and_hero_cache_reuse(self):
         provider = module.Provider()
         with patch.object(provider.client, 'artwork_batch', side_effect=lambda game, kind, page: ([{'url': kind}], False)):
-            self.assertEqual(provider.images(12, 'Icon'), [{'url': 'icons'}, {'url': 'logos'}])
+            self.assertEqual(provider.images(12, 'Icon'), [{'url': 'icons'}])
+            self.assertEqual(provider.images(12, 'Logo'), [{'url': 'logos'}])
             self.assertEqual(provider.images(12, 'HeaderImage'), [{'url': 'heroes'}])
             self.assertEqual(provider.images(12, 'BackgroundImage'), [{'url': 'heroes'}])
             self.assertEqual(provider.images(12, 'Unsupported'), [])
