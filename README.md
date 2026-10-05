@@ -22,6 +22,6 @@ SteamGridDB provides limited game metadata: this plugin supplies names, sorting 
 
 ## Development
 
-Requires Playlite. Run `python3 -m unittest discover -s tests -v` with Playlite on `PYTHONPATH`. Build packages with `python3 tools/build_release.py`; publish with `python3 tools/publish_distribution.py v1.0.1`.
+Requires Playlite. Run `python3 -m unittest discover -s tests -v` with Playlite on `PYTHONPATH`. Build packages with `python3 tools/build_release.py`; publish with `python3 tools/publish_release.py v1.0.1`.
 
 API reference: https://www.steamgriddb.com/api/v2
