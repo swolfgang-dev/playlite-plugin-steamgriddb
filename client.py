@@ -178,6 +178,8 @@ class Client:
                     name = author.get('name', '') if isinstance(author, dict) else ''
                     label = {'grids': 'Cover', 'heroes': 'Hero', 'logos': 'Logo', 'icons': 'Icon'}[category]
                     candidate = {'url': url, 'label': f'{label} {entry.get("id", "")}' + (f' · {name}' if name else '')}
+                    if all(isinstance(entry.get(key), int) and entry[key] > 0 for key in ('width', 'height')):
+                        candidate.update(width=entry['width'], height=entry['height'])
                     if isinstance(entry.get('thumb'), str) and entry['thumb'].startswith('https://'):
                         candidate['thumbnail'] = entry['thumb']
                     candidates.append(candidate)

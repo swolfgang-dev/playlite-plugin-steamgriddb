@@ -93,6 +93,12 @@ class ProviderTests(unittest.TestCase):
             self.assertEqual(len(images), 1)
             self.assertFalse(more)
 
+    def test_artwork_reports_full_size_for_filtering_before_download(self):
+        client = Client('fake')
+        with patch.object(client, 'request', return_value={'data': [{'id': 1, 'url': 'https://cdn.example.com/1.png', 'width': 600, 'height': 900}]}):
+            image = client.artwork(1, 'grids')[0]
+            self.assertEqual((image['width'], image['height']), (600, 900))
+
     def test_unsafe_artwork_urls_are_skipped(self):
         client = Client('fake')
         with patch.object(client, 'request', return_value={'data': [{'url': 'file:///etc/passwd'}, {'url': 'http://example.com/a'}, {'url': 'https://cdn.example.com/a'}]}):
