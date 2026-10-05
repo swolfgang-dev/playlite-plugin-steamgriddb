@@ -22,7 +22,7 @@ class Provider(MetadataProvider):
         widget.image_limit.setRange(10, 200)
         widget.image_limit.setValue(widget.original_settings['image_limit'])
         form.addRow('API key', widget.api_key)
-        form.addRow('Images per category', widget.image_limit)
+        form.addRow('Images per category per batch', widget.image_limit)
         help_text = QLabel('<a href="https://www.steamgriddb.com/profile/preferences/api">Get a SteamGridDB API key</a>. '
                            'Provides basic game names and links, plus covers, heroes, icons, and logos. '
                            'Hero images are available as headers and backgrounds; logos appear under icons. '
@@ -71,7 +71,14 @@ class Provider(MetadataProvider):
         return {key: value for key, value in result.items() if key in fields}
 
     def images(self, game_id, image_type):
+        return self.image_page(game_id, image_type)[0]
+
+    def image_page(self, game_id, image_type, page=0):
         categories = {'Icon': ('icons', 'logos'), 'CoverImage': ('grids',),
                       'HeaderImage': ('heroes',), 'BackgroundImage': ('heroes',)}
-        return [candidate for category in categories.get(image_type, ())
-                for candidate in self.client.artwork(game_id, category)]
+        candidates, more = [], False
+        for category in categories.get(image_type, ()):
+            images, remaining = self.client.artwork_batch(game_id, category, page)
+            candidates.extend(images)
+            more = more or remaining
+        return candidates, more

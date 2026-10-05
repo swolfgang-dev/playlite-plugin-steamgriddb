@@ -133,23 +133,35 @@ class Client:
                 and isinstance(entry.get('name'), str)]
 
     def artwork(self, game_id, category):
+        return self.artwork_batch(game_id, category)[0]
+
+    def artwork_batch(self, game_id, category, batch=0):
+        if not isinstance(batch, int) or batch < 0:
+            raise ValueError("Invalid artwork batch.")
         if category not in ('grids', 'heroes', 'logos', 'icons'):
             raise ValueError('Unsupported artwork category.')
         reference = game_reference(str(game_id))
         if not reference or reference[0] != 'id':
             raise MetadataError('Enter a valid SteamGridDB game ID.')
-        key = (reference[1], category)
+        target = self.image_limit * (batch + 1)
         with self.lock:
-            cached = self.cache.get(key)
-            if cached and monotonic() - cached[0] < 300:
-                return cached[1]
             candidates, seen = [], set()
-            for page in range((self.image_limit + 49) // 50):
-                try:
-                    response = self.request(f'/{category}/game/{reference[1]}',
-                                            {'page': page, 'limit': 50, 'types': 'static'})
-                except NotFound:
-                    break
+            exhausted = False
+            page = 0
+            while True:
+                key = (reference[1], category, page)
+                cached = self.cache.get(key)
+                if cached and monotonic() - cached[0] < 300:
+                    response = cached[1]
+                else:
+                    try:
+                        response = self.request(f'/{category}/game/{reference[1]}',
+                                                {'page': page, 'limit': 50, 'types': 'static'})
+                    except NotFound:
+                        response = {'data': [], 'total': page * 50}
+                    if len(self.cache) >= 64:
+                        self.cache.pop(next(iter(self.cache)))
+                    self.cache[key] = (monotonic(), response)
                 entries = response['data']
                 if not isinstance(entries, list):
                     raise MetadataError('SteamGridDB returned invalid artwork.')
@@ -171,9 +183,9 @@ class Client:
                     candidates.append(candidate)
                 total = response.get('total')
                 if len(entries) < 50 or (isinstance(total, int) and (page + 1) * 50 >= total):
+                    exhausted = True
+                if exhausted or len(candidates) >= target:
                     break
-            candidates = candidates[:self.image_limit]
-            if len(self.cache) >= 32:
-                self.cache.pop(next(iter(self.cache)))
-            self.cache[key] = (monotonic(), candidates)
-            return candidates
+                page += 1
+            start = batch * self.image_limit
+            return candidates[start:target], len(candidates) > target or not exhausted

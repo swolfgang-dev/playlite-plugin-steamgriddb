@@ -73,6 +73,26 @@ class ProviderTests(unittest.TestCase):
             self.assertEqual(request.call_count, 2)
             self.assertEqual(request.call_args_list[1].args[1]['page'], 1)
 
+    def test_load_more_keeps_remainder_of_api_page_and_stops_at_total(self):
+        client = Client('fake', image_limit=10)
+        entries = [{'id': n, 'url': f'https://cdn.example.com/{n}.png'} for n in range(23)]
+        with patch.object(client, 'request', return_value={'data': entries, 'total': 23}) as request:
+            batches = [client.artwork_batch(1, 'grids', page) for page in range(3)]
+            self.assertEqual([len(images) for images, more in batches], [10, 10, 3])
+            self.assertEqual([more for images, more in batches], [True, True, False])
+            self.assertEqual(len({image['url'] for images, more in batches for image in images}), 23)
+            request.assert_called_once()
+
+    def test_default_batch_more_flag_uses_total(self):
+        client = Client('fake')
+        entries = [{'id': n, 'url': f'https://cdn.example.com/{n}.png'} for n in range(50)]
+        with patch.object(client, 'request', side_effect=[{'data': entries, 'total': 51},
+                {'data': [{'id': 50, 'url': 'https://cdn.example.com/50.png'}], 'total': 51}]):
+            self.assertTrue(client.artwork_batch(1, 'grids')[1])
+            images, more = client.artwork_batch(1, 'grids', 1)
+            self.assertEqual(len(images), 1)
+            self.assertFalse(more)
+
     def test_unsafe_artwork_urls_are_skipped(self):
         client = Client('fake')
         with patch.object(client, 'request', return_value={'data': [{'url': 'file:///etc/passwd'}, {'url': 'http://example.com/a'}, {'url': 'https://cdn.example.com/a'}]}):
@@ -91,7 +111,7 @@ class ProviderTests(unittest.TestCase):
 
     def test_image_mapping_and_hero_cache_reuse(self):
         provider = module.Provider()
-        with patch.object(provider.client, 'artwork', side_effect=lambda game, kind: [{'url': kind}]) as artwork:
+        with patch.object(provider.client, 'artwork_batch', side_effect=lambda game, kind, page: ([{'url': kind}], False)):
             self.assertEqual(provider.images(12, 'Icon'), [{'url': 'icons'}, {'url': 'logos'}])
             self.assertEqual(provider.images(12, 'HeaderImage'), [{'url': 'heroes'}])
             self.assertEqual(provider.images(12, 'BackgroundImage'), [{'url': 'heroes'}])
