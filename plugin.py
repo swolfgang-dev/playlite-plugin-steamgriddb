@@ -54,7 +54,7 @@ class Provider(MetadataProvider):
         linked = self.linked_query(game)
         if linked:
             return linked
-        steam_id = (game.get('MetadataIds') or {}).get('Steam') or game.get('SteamId')
+        steam_id = (game.get('MetadataIds') or {}).get('SteamMetadata') or game.get('SteamId')
         if steam_id and game_reference(str(steam_id)):
             return f'steam:{steam_id}'
         return next((link['Url'] for link in game.get('Links') or []

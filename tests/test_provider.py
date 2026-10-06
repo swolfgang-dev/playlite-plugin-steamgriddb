@@ -127,8 +127,8 @@ class ProviderTests(unittest.TestCase):
 
     def test_query_prioritizes_saved_sgdb_then_steam_associations(self):
         provider = module.Provider()
-        self.assertEqual(provider.query({'Name': 'Title', 'MetadataIds': {'SteamGridDB': 12, 'Steam': 220}}), '12')
-        self.assertEqual(provider.query({'Name': 'Title', 'MetadataIds': {'Steam': 220}}), 'steam:220')
+        self.assertEqual(provider.query({'Name': 'Title', 'MetadataIds': {'SteamGridDB': 12, 'SteamMetadata': 220}}), '12')
+        self.assertEqual(provider.query({'Name': 'Title', 'MetadataIds': {'SteamMetadata': 220}}), 'steam:220')
         self.assertEqual(provider.query({'Name': 'Title'}), 'Title')
 
     def test_credentials_are_private_and_follow_xdg(self):

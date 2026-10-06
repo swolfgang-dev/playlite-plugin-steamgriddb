@@ -1,7 +1,7 @@
 {
   "id": "SteamGridDB",
   "name": "SteamGridDB",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "api_version": 1,
   "fields": [
     "Name",
@@ -14,6 +14,49 @@
   ],
   "enabled": true,
   "repository": "swolfgang-dev/playlite-plugin-steamgriddb",
-  "minimum_playlite_version": "0.2.4",
-  "description": "SteamGridDB game names and links, with community covers, heroes, icons, and logos. Requires an API key."
+  "minimum_playlite_version": "0.2.44",
+  "description": "SteamGridDB game names and links, with community covers, heroes, icons, and logos. Requires an API key.",
+  "settings_files": [
+    "playlite/steamgriddb.json"
+  ],
+  "image_defaults": {
+    "Icon": {
+      "artwork": [
+        "Icon"
+      ],
+      "shape": [
+        "square"
+      ],
+      "resolution": [
+        256
+      ]
+    },
+    "CoverImage": {
+      "artwork": [
+        "CoverImage"
+      ],
+      "shape": [
+        "2:3"
+      ],
+      "resolution": [
+        512
+      ]
+    },
+    "HeaderImage": {
+      "artwork": [
+        "HeaderImage"
+      ],
+      "shape": [
+        "96:31"
+      ],
+      "resolution": [
+        1024
+      ]
+    },
+    "Logo": {
+      "artwork": [
+        "Logo"
+      ]
+    }
+  }
 }
