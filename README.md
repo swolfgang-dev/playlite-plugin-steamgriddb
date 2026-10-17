@@ -16,7 +16,7 @@ Select SteamGridDB in **Download metadata** or **Download images**. Search by ti
 - **Cover:** grids, including portrait and landscape covers.
 - **Header / Background:** hero images.
 
-Use Playlite's artwork, shape, and resolution filters to narrow results. The API key and image limit are stored locally in `$XDG_CONFIG_HOME/playlite/steamgriddb.json` (default `~/.config/playlite/steamgriddb.json`), with owner-only file permissions. Static artwork only; searches load 50 images per category per batch by default, configurable from 10 to 200. Click **Load more** to append the next batch when more artwork is available. Requires Playlite 0.2.4 or later.
+Use Playlite's artwork, shape, and resolution filters to narrow results. The API key and image limit are stored locally in `$XDG_CONFIG_HOME/playlite/steamgriddb.json` (default `~/.config/playlite/steamgriddb.json`), with owner-only file permissions. Static artwork only; searches load 50 images per category per batch by default, configurable from 10 to 200. Click **Load more** to append the next batch when more artwork is available. Requires Playlite 0.2.87 or later.
 
 SteamGridDB provides limited game metadata: this plugin supplies names, sorting names, and a SteamGridDB link. Use another metadata provider for descriptions, genres, and other details.
 
