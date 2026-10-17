@@ -35,16 +35,10 @@ def load_settings():
 
 
 def save_settings(values):
+    from playlite.storage import atomic_json
     destination = settings_path()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    import tempfile
-    descriptor, name = tempfile.mkstemp(dir=destination.parent, prefix='.steamgriddb-')
-    try:
-        with os.fdopen(descriptor, 'w') as stream:
-            json.dump(values, stream)
-        os.replace(name, destination)
-    finally:
-        Path(name).unlink(missing_ok=True)
+    atomic_json(destination, values, mode=0o600)
 
 
 class NoRedirect(HTTPRedirectHandler):
