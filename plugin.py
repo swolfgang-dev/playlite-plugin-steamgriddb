@@ -68,7 +68,8 @@ class Provider(MetadataProvider):
         game = self.client.game(game_id)
         result = {'Name': game['name'], 'SortingName': sorting_name(game['name']),
                   'Links': [{'Name': 'SteamGridDB', 'Url': f'https://www.steamgriddb.com/game/{game["id"]}'}]}
-        return {key: value for key, value in result.items() if key in fields}
+        return {'id': game['id'], 'name': game['name'], 'provider': 'SteamGridDB',
+                'fields': {key: value for key, value in result.items() if key in fields}, 'images': {}}
 
     def images(self, game_id, image_type):
         return self.image_page(game_id, image_type)[0]

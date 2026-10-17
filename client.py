@@ -159,6 +159,7 @@ class Client:
                 entries = response['data']
                 if not isinstance(entries, list):
                     raise MetadataError('SteamGridDB returned invalid artwork.')
+                previous_count = len(candidates)
                 for entry in entries:
                     if not isinstance(entry, dict):
                         continue
@@ -178,7 +179,8 @@ class Client:
                         candidate['thumbnail'] = entry['thumb']
                     candidates.append(candidate)
                 total = response.get('total')
-                if len(entries) < 50 or (isinstance(total, int) and (page + 1) * 50 >= total):
+                if (len(entries) < 50 or (isinstance(total, int) and (page + 1) * 50 >= total)
+                        or page > 0 and len(candidates) == previous_count):
                     exhausted = True
                 if exhausted or len(candidates) >= target:
                     break

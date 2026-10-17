@@ -114,7 +114,44 @@ class ProviderTests(unittest.TestCase):
     def test_metadata_only_returns_requested_supported_fields(self):
         provider = module.Provider()
         with patch.object(provider.client, 'game', return_value={'id': 12, 'name': 'The Game'}):
-            self.assertEqual(provider.fetch(12, {'Name', 'Description'}), {'Name': 'The Game'})
+            self.assertEqual(provider.fetch(12, {'Name', 'Description'}),
+                             {'id': 12, 'name': 'The Game', 'provider': 'SteamGridDB',
+                              'fields': {'Name': 'The Game'}, 'images': {}})
+
+    def test_repeated_api_page_stops_instead_of_requesting_forever(self):
+        client = Client('fake', image_limit=60)
+        entries = [{'id': number, 'url': f'https://cdn.example.com/{number}.png'} for number in range(50)]
+        with patch.object(client, 'request', side_effect=[{'data': entries}, {'data': entries}]):
+            images, more = client.artwork_batch(1, 'grids')
+        self.assertEqual(len(images), 50)
+        self.assertFalse(more)
+
+    def test_downloaded_metadata_is_available_in_the_core_review_workflow(self):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QApplication, QListWidgetItem
+        from playlite.metadata_dialog import MetadataDownloader
+        app = QApplication.instance() or QApplication([])
+        provider = module.Provider()
+        provider.id = provider.name = 'SteamGridDB'
+        provider.fields = frozenset(('Name', 'SortingName', 'Links'))
+        current = {'Name': 'Original'}
+        with patch('playlite.providers.discover_providers', return_value={'SteamGridDB': provider}):
+            dialog = MetadataDownloader(current, mode='metadata')
+        try:
+            dialog.selected_fields = ['Name']
+            item = QListWidgetItem('The Game')
+            item.setData(Qt.ItemDataRole.UserRole, 12)
+            with patch.object(provider.client, 'game', return_value={'id': 12, 'name': 'The Game'}), \
+                    patch.object(dialog, 'run_task', side_effect=lambda function, completed, message: completed(function())):
+                dialog.choose_result(item)
+            dialog.select_source_values('SteamGridDB')
+            dialog.apply()
+            self.assertEqual(dialog.applied['Name'], 'The Game')
+            self.assertEqual(dialog.applied['MetadataIds'], {'SteamGridDB': '12'})
+            self.assertEqual(current, {'Name': 'Original'})
+        finally:
+            dialog.reject()
+            dialog.cache.cleanup()
 
     def test_image_mapping_and_hero_cache_reuse(self):
         provider = module.Provider()
